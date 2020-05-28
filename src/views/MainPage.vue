@@ -5,12 +5,12 @@
       :onCreateGroup="openCreateGroupModal"
     />
     <div class="main-page-content">
-      <ul v-if="cards" class="main-page-cards">
+      <ul v-if="tasks" class="main-page-cards">
         <li v-for="task in tasks" :key="task.id">
           <UiCard
             :value="task"
             :onEdit="openEditModal"
-            :onRemove="removeTask"
+            :onRemove="openRemoveModal"
           />
         </li>
       </ul>
@@ -69,6 +69,13 @@
         <button class="button_primary edit-task-modal__submit" @click="editCard">Редактировать</button>
       </div>
     </Modal>
+
+    <Modal :opened="removeTaskModal.modal" title="Удалить задачу?" :closeModal="closeRemoveTaskModal">
+      <div class="remove-task-modal-buttons">
+        <button class="remove-task-modal__cancel" @click="closeRemoveTaskModal">Отмена</button>
+        <button class="button_danger remove-task-modal__submit" @click="removeTask">Удалить</button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -92,8 +99,6 @@ export default {
   },
   data() {
     return {
-      cards: [
-      ],
       groups: [
         {
           id: 0,
@@ -135,6 +140,10 @@ export default {
           done: false,
           groupId: 0
         }
+      },
+      removeTaskModal: {
+        modal: false,
+        form: {}
       }
     };
   },
@@ -234,11 +243,19 @@ export default {
       this.editTaskModal.modal = false;
     },
 
-    removeTask(removed) {
+    openRemoveModal(removed) {
+      this.removeTaskModal.modal = true;
+      this.removeTaskModal.form = removed;
+    },
+    removeTask() {
       this.groups = this.groups.map(group => {
-        const tasks = group.tasks.filter(task => task.id !== removed.id);
+        const tasks = group.tasks.filter(task => task.id !== this.removeTaskModal.form.id);
         return {...group, tasks};
       });
+      this.closeRemoveTaskModal();
+    },
+    closeRemoveTaskModal() {
+      this.removeTaskModal.modal = false;
     },
 
     openCreateGroupModal() {}
@@ -274,6 +291,14 @@ export default {
       margin-top: 12px;
     }
     &__cancel {}
+    &__submit {
+      margin-left: 8px;
+    }
+  }
+  .remove-task-modal {
+    &-buttons {
+      margin-top: 24px;
+    }
     &__submit {
       margin-left: 8px;
     }
