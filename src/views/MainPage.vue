@@ -5,6 +5,13 @@
       :onCreateGroup="openCreateGroupModal"
     />
     <div class="main-page-content">
+      <div class="main-page-search">
+        <UiTextField
+          :value="searchString"
+          placeholder="Поиск по задачам"
+          :onChange="searchDebounced"
+        />
+      </div>
       <ul v-if="tasks" class="main-page-cards">
         <li v-for="task in tasks" :key="task.id">
           <UiCard
@@ -80,6 +87,7 @@
 </template>
 
 <script>
+import _ from 'lodash';
 import Header from "../components/Header";
 import UiCard from "../components/UiCard";
 import Modal from "../components/Modal";
@@ -168,9 +176,16 @@ export default {
         return [...sum, ...searched];
       }, []);
       return tasks;
+    },
+    searchDebounced() {
+      return _.debounce(this.search, 500);
     }
   },
   methods: {
+    search(e) {
+      this.searchString = e.target.value;
+    },
+
     openCreateTaskModal() {
       this.createTaskModal.modal = true;
     },
@@ -273,6 +288,10 @@ export default {
   background-color: #f5f5f5;
   &-content {
     padding: 20px;
+  }
+  &-search {
+    max-width: 500px;
+    margin: 0 auto;
   }
   &-cards {
     display: flex;

@@ -1,10 +1,11 @@
 <template>
   <label class="ui-text-field">
-    <span class="ui-text-field__label">{{label}}</span>
+    <span v-if="label" class="ui-text-field__label">{{label}}</span>
     <input
       class="ui-text-field__input"
       type="text"
       :value="value"
+      :placeholder="placeholder"
       @input="onChange"
     />
     <span class="ui-text-field__error">{{error}}</span>
@@ -18,6 +19,7 @@ export default {
     label: String,
     value: String,
     error: String,
+    placeholder: String,
     onChange: Function
   }
 }
