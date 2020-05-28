@@ -14,7 +14,10 @@
             <span v-if="card.done" class="_done">Выполнено</span>
             <span v-if="!card.done">Не выполнено</span>
           </p>
-          <button class="cards-item__edit" @click="openEditModal(card)">Редактировать</button>
+          <div class="cards-item-buttons">
+            <button class="cards-item__edit" @click="openEditModal(card)">Редактировать</button>
+            <button class="button_danger cards-item__delete" @click="removeCard(card)">Удалить</button>
+          </div>
         </li>
         <li class="cards-item cards-item_button">
           <button
@@ -155,6 +158,10 @@ export default {
     },
     closeEditModal() {
       this.edit.modal = false;
+    },
+
+    removeCard(removed) {
+      this.cards = this.cards.filter(item => item.id !== removed.id);
     }
   }
 }
@@ -208,8 +215,13 @@ export default {
             color: #228c22;
           }
         }
-        &__edit {
+        &-buttons {
           margin-top: 12px;
+        }
+        &__edit {
+        }
+        &__delete {
+          margin-left: 12px;
         }
       }
       &__create-new {

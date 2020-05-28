@@ -3,7 +3,7 @@
     <i
       class="ui-checkbox__icon"
       :class="{'ui-checkbox__icon_checked': value}"
-    ></i>
+    ><i></i></i>
     <span class="ui-checkbox__label">{{label}}</span>
   </label>
 </template>
@@ -33,7 +33,15 @@ export default {
     border: 2px solid #777;
     cursor: pointer;
     &_checked {
-      background-color: #d0d0d0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      i {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background-color: #888;
+      }
     }
   }
   &__label {

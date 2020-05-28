@@ -77,5 +77,10 @@ button, .button {
     border-color: #999;
     color: white;
   }
+  &_danger {
+    background-color: #dd4455;
+    border-color: #dd4455;
+    color: white;
+  }
 }
 </style>
