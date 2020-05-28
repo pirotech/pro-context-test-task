@@ -65,11 +65,17 @@ input, textarea {
   border-radius: 2px;
   padding: 8px 12px;
 }
-button {
+button, .button {
   border: 1px solid #ccc;
   border-radius: 2px;
   padding: 8px 12px;
   background-color: white;
   cursor: pointer;
+  color: #222;
+  &_primary {
+    background-color: #999;
+    border-color: #999;
+    color: white;
+  }
 }
 </style>

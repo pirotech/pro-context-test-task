@@ -15,14 +15,44 @@
             <span v-if="!card.done">Не выполнено</span>
           </p>
         </li>
+        <li class="cards-item cards-item_button">
+          <button
+            class="cards__create-new"
+            @click="openCreateNewModal"
+          >Добавить</button>
+        </li>
       </ul>
+    </div>
+
+    <div v-if="createNew.modal" class="main-page-create-new-modal" @click.self.stop="closeCreateNewModal">
+      <div class="create-new-modal-wrapper">
+        <h4>Добавить карточку</h4>
+        <UiTextField
+          class="create-new-modal__name"
+          label="Имя"
+          :value="createNew.form.name"
+          :error="createNew.form.nameError"
+          :onChange="e => this.onChangeCreateNewField('name', e.target.value)"
+        />
+        <div class="create-new-modal-buttons">
+          <button class="create-new-modal__cancel" @click="closeCreateNewModal">Отмена</button>
+          <button class="button_primary create-new-modal__submit" @click="createNewCard">Создать</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import UiCheckbox from "../components/UiCheckbox";
+import UiTextField from "../components/UiTextField";
+
 export default {
   name: 'MainPage',
+  components: {
+    UiCheckbox,
+    UiTextField
+  },
   data() {
     return {
       cards: [
@@ -31,8 +61,44 @@ export default {
           name: 'Cook sandwich',
           done: false
         }
-      ]
+      ],
+      createNew: {
+        modal: false,
+        form: {
+          name: '',
+          nameError: ''
+        }
+      }
     };
+  },
+  methods: {
+    openCreateNewModal() {
+      this.createNew.modal = true;
+    },
+    onChangeCreateNewField(name, value) {
+      this.createNew.form[name] = value;
+      this.createNew.form[name + 'Error'] = '';
+    },
+    createNewCard() {
+      const { name } = this.createNew.form;
+      if (!name) {
+        this.createNew.form.nameError = 'Обязательное поле';
+        return;
+      }
+
+      const created = {
+        id: Math.round(Math.random() * 1000),
+        name,
+        done: false
+      };
+      this.cards.push(created);
+      this.closeCreateNewModal();
+    },
+    closeCreateNewModal() {
+      this.createNew.modal = false;
+      this.createNew.form.name = '';
+      this.createNew.form.nameError = '';
+    }
   }
 }
 </script>
@@ -54,19 +120,57 @@ export default {
   }
   &-cards {
     display: flex;
+    flex-wrap: wrap;
     .cards {
       display: flex;
       &-item {
         display: flex;
         flex-direction: column;
+        justify-content: center;
         align-items: flex-start;
+        min-width: 300px;
         padding: 20px;
-        margin-left: 20px;
+        margin-right: 20px;
+        margin-bottom: 20px;
         background-color: white;
         border-radius: 2px;
-        &:first-child {
-          margin-left: 0;
+        &_button {
+          align-items: center;
         }
+      }
+      &__create-new {
+      }
+    }
+  }
+  &-create-new-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    background-color: rgba(0, 0, 0, .6);
+    .create-new-modal {
+      &-wrapper {
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        background-color: white;
+        border-radius: 2px;
+      }
+      &__name {
+        margin-top: 12px;
+      }
+      &-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+      }
+      &__cancel {}
+      &__submit {
+        margin-left: 8px;
       }
     }
   }
