@@ -11,9 +11,10 @@
           <h4 class="cards-item__name">{{card.name}}</h4>
           <p class="cards-item__status">
             <strong>Статус: </strong>
-            <span v-if="card.done" class="card-item__status_done">Выполнено</span>
+            <span v-if="card.done" class="_done">Выполнено</span>
             <span v-if="!card.done">Не выполнено</span>
           </p>
+          <button class="cards-item__edit" @click="openEditModal(card)">Редактировать</button>
         </li>
         <li class="cards-item cards-item_button">
           <button
@@ -24,19 +25,41 @@
       </ul>
     </div>
 
-    <div v-if="createNew.modal" class="main-page-create-new-modal" @click.self.stop="closeCreateNewModal">
-      <div class="create-new-modal-wrapper">
+    <div v-if="createNew.modal" class="main-page-modal" @click.self.stop="closeCreateNewModal">
+      <div class="modal-wrapper">
         <h4>Добавить карточку</h4>
         <UiTextField
-          class="create-new-modal__name"
+          class="modal__name"
           label="Имя"
           :value="createNew.form.name"
           :error="createNew.form.nameError"
           :onChange="e => this.onChangeCreateNewField('name', e.target.value)"
         />
-        <div class="create-new-modal-buttons">
-          <button class="create-new-modal__cancel" @click="closeCreateNewModal">Отмена</button>
-          <button class="button_primary create-new-modal__submit" @click="createNewCard">Создать</button>
+        <div class="modal-buttons">
+          <button class="modal__cancel" @click="closeCreateNewModal">Отмена</button>
+          <button class="button_primary modal__submit" @click="createNewCard">Создать</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="edit.modal" class="main-page-modal" @click.self.stop="closeEditModal">
+      <div class="modal-wrapper">
+        <h4>Редактировать карточку</h4>
+        <UiTextField
+          class="modal__name"
+          label="Имя"
+          :value="edit.form.name"
+          :error="edit.form.nameError"
+          :onChange="e => this.onChangeEditField('name', e.target.value)"
+        />
+        <UiCheckbox
+          :label="edit.form.done ? 'Выполнено' : 'Не выполнено'"
+          :value="edit.form.done"
+          :onChange="() => this.onChangeEditField('done', !edit.form.done)"
+        />
+        <div class="modal-buttons">
+          <button class="modal__cancel" @click="closeEditModal">Отмена</button>
+          <button class="button_primary modal__submit" @click="editCard">Редактировать</button>
         </div>
       </div>
     </div>
@@ -59,7 +82,7 @@ export default {
         {
           id: 0,
           name: 'Cook sandwich',
-          done: false
+          done: true
         }
       ],
       createNew: {
@@ -67,6 +90,14 @@ export default {
         form: {
           name: '',
           nameError: ''
+        }
+      },
+      edit: {
+        modal: false,
+        form: {
+          name: '',
+          nameError: '',
+          done: false,
         }
       }
     };
@@ -98,6 +129,32 @@ export default {
       this.createNew.modal = false;
       this.createNew.form.name = '';
       this.createNew.form.nameError = '';
+    },
+
+    openEditModal(item) {
+      this.edit.modal = true;
+      this.edit.form = {
+        ...this.edit.form,
+        ...item
+      }
+    },
+    onChangeEditField(name, value) {
+      this.edit.form[name] = value;
+      this.edit.form[name + 'Error'] = '';
+    },
+    editCard() {
+      const { id, name, done } = this.edit.form;
+      if (!name) {
+        this.edit.form.nameError = 'Обязательное поле';
+        return;
+      }
+
+      const edited = { id, name, done };
+      this.cards = this.cards.map(item => item.id === id ? edited : item);
+      this.closeEditModal();
+    },
+    closeEditModal() {
+      this.edit.modal = false;
     }
   }
 }
@@ -129,6 +186,7 @@ export default {
         justify-content: center;
         align-items: flex-start;
         min-width: 300px;
+        max-width: 300px;
         padding: 20px;
         margin-right: 20px;
         margin-bottom: 20px;
@@ -137,12 +195,28 @@ export default {
         &_button {
           align-items: center;
         }
+        &__name {
+          width: 100%;
+          text-align: left;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        &__status {
+          margin-top: 12px;
+          ._done {
+            color: #228c22;
+          }
+        }
+        &__edit {
+          margin-top: 12px;
+        }
       }
       &__create-new {
       }
     }
   }
-  &-create-new-modal {
+  &-modal {
     position: absolute;
     top: 0;
     left: 0;
@@ -152,7 +226,7 @@ export default {
     width: 100%;
     min-height: 100vh;
     background-color: rgba(0, 0, 0, .6);
-    .create-new-modal {
+    .modal {
       &-wrapper {
         width: 100%;
         max-width: 500px;

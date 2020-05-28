@@ -1,0 +1,43 @@
+<template>
+  <label class="ui-checkbox" @click="onChange">
+    <i
+      class="ui-checkbox__icon"
+      :class="{'ui-checkbox__icon_checked': value}"
+    ></i>
+    <span class="ui-checkbox__label">{{label}}</span>
+  </label>
+</template>
+
+<script>
+export default {
+  name: "UiCheckbox",
+  props: {
+    id: String,
+    label: String,
+    value: Boolean,
+    onChange: Function
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.ui-checkbox {
+  display: flex;
+  align-items: center;
+  &__icon {
+    display: inline-block;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    background-color: white;
+    border: 2px solid #777;
+    cursor: pointer;
+    &_checked {
+      background-color: #d0d0d0;
+    }
+  }
+  &__label {
+    margin-left: 8px;
+  }
+}
+</style>
