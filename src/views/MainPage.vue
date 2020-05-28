@@ -1,122 +1,178 @@
 <template>
   <div class="main-page">
-    <h1>Карточки</h1>
+    <Header
+      :onCreateTask="openCreateTaskModal"
+      :onCreateGroup="openCreateGroupModal"
+    />
     <div class="main-page-content">
       <ul v-if="cards" class="main-page-cards">
-        <li
-          v-for="card in cards"
-          :key="card.id"
-          class="cards-item"
-        >
-          <h4 class="cards-item__name">{{card.name}}</h4>
-          <p class="cards-item__status">
-            <strong>Статус: </strong>
-            <span v-if="card.done" class="_done">Выполнено</span>
-            <span v-if="!card.done">Не выполнено</span>
-          </p>
-          <div class="cards-item-buttons">
-            <button class="cards-item__edit" @click="openEditModal(card)">Редактировать</button>
-            <button class="button_danger cards-item__delete" @click="removeCard(card)">Удалить</button>
-          </div>
-        </li>
-        <li class="cards-item cards-item_button">
-          <button
-            class="cards__create-new"
-            @click="openCreateNewModal"
-          >Добавить</button>
+        <li v-for="task in tasks" :key="task.id">
+          <UiCard
+            :value="task"
+            :onEdit="openEditModal"
+            :onRemove="removeTask"
+          />
         </li>
       </ul>
     </div>
 
-    <div v-if="createNew.modal" class="main-page-modal" @click.self.stop="closeCreateNewModal">
-      <div class="modal-wrapper">
-        <h4>Добавить карточку</h4>
-        <UiTextField
-          class="modal__name"
-          label="Имя"
-          :value="createNew.form.name"
-          :error="createNew.form.nameError"
-          :onChange="e => this.onChangeCreateNewField('name', e.target.value)"
-        />
-        <div class="modal-buttons">
-          <button class="modal__cancel" @click="closeCreateNewModal">Отмена</button>
-          <button class="button_primary modal__submit" @click="createNewCard">Создать</button>
-        </div>
+    <Modal :opened="createTaskModal.modal" title="Создать карточку" :closeModal="closeCreateTaskModal">
+      <UiTextField
+        class="create-task-modal__name"
+        label="Имя"
+        :value="createTaskModal.form.name"
+        :error="createTaskModal.form.nameError"
+        :onChange="e => this.onChangeCreateTaskField('name', e.target.value)"
+      />
+      <UiRadioButton
+        v-for="(group, index) in groups"
+        :key="group.id"
+        class="create-task-modal__group"
+        name="groupId"
+        :label="group.name"
+        :value="group.id"
+        :checked="index === 0"
+        :onChange="onChangeCreateTaskField"
+      />
+      <div class="create-task-modal-buttons">
+        <button class="create-task-modal__cancel" @click="closeCreateTaskModal">Отмена</button>
+        <button class="button_primary create-task-modal__submit" @click="createTask">Создать</button>
       </div>
-    </div>
+    </Modal>
 
-    <div v-if="edit.modal" class="main-page-modal" @click.self.stop="closeEditModal">
-      <div class="modal-wrapper">
-        <h4>Редактировать карточку</h4>
-        <UiTextField
-          class="modal__name"
-          label="Имя"
-          :value="edit.form.name"
-          :error="edit.form.nameError"
-          :onChange="e => this.onChangeEditField('name', e.target.value)"
-        />
-        <UiCheckbox
-          :label="edit.form.done ? 'Выполнено' : 'Не выполнено'"
-          :value="edit.form.done"
-          :onChange="() => this.onChangeEditField('done', !edit.form.done)"
-        />
-        <div class="modal-buttons">
-          <button class="modal__cancel" @click="closeEditModal">Отмена</button>
-          <button class="button_primary modal__submit" @click="editCard">Редактировать</button>
-        </div>
+    <Modal :opened="editTaskModal.modal" title="Редактировать карточку" :closeModal="closeEditTaskModal">
+      <UiTextField
+        class="edit-task-modal__name"
+        label="Имя"
+        :value="editTaskModal.form.name"
+        :error="editTaskModal.form.nameError"
+        :onChange="e => this.onChangeEditTaskField('name', e.target.value)"
+      />
+      <UiRadioButton
+        v-for="group in groups"
+        :key="group.id"
+        class="create-task-modal__group"
+        name="groupId"
+        :label="group.name"
+        :value="group.id"
+        :checked="group.id === editTaskModal.form.groupId"
+        :onChange="onChangeEditTaskField"
+      />
+      <UiCheckbox
+        class="edit-task-modal__status"
+        :label="editTaskModal.form.done ? 'Выполнено' : 'Не выполнено'"
+        :value="editTaskModal.form.done"
+        :onChange="() => this.onChangeEditTaskField('done', !editTaskModal.form.done)"
+      />
+      <div class="edit-task-modal-buttons">
+        <button class="edit-task-modal__cancel" @click="closeEditTaskModal">Отмена</button>
+        <button class="button_primary edit-task-modal__submit" @click="editCard">Редактировать</button>
       </div>
-    </div>
+    </Modal>
   </div>
 </template>
 
 <script>
+import Header from "../components/Header";
+import UiCard from "../components/UiCard";
+import Modal from "../components/Modal";
 import UiCheckbox from "../components/UiCheckbox";
 import UiTextField from "../components/UiTextField";
+import UiRadioButton from "../components/UiRadioButton";
 
 export default {
   name: 'MainPage',
   components: {
+    Header,
+    UiCard,
+    Modal,
     UiCheckbox,
-    UiTextField
+    UiTextField,
+    UiRadioButton
   },
   data() {
     return {
       cards: [
+      ],
+      groups: [
         {
           id: 0,
-          name: 'Cook sandwich',
-          done: true
+          name: 'Без группы',
+          tasks: [
+            {
+              id: 0,
+              name: 'Приготовить ужин',
+              done: false
+            }
+          ]
+        },
+        {
+          id: 1,
+          name: 'Срочные',
+          tasks: [
+            {
+              id: 1,
+              name: 'Погладить рубашку',
+              done: false
+            }
+          ]
         }
       ],
-      createNew: {
+      searchString: '',
+      createTaskModal: {
         modal: false,
         form: {
           name: '',
-          nameError: ''
+          nameError: '',
+          groupId: 0
         }
       },
-      edit: {
+      editTaskModal: {
         modal: false,
         form: {
           name: '',
           nameError: '',
           done: false,
+          groupId: 0
         }
       }
     };
   },
+  computed: {
+    tasks() {
+      const tasks = this.groups.reduce((sum, group) => {
+        const grouped = group.tasks.map(task => {
+          const { id, name } = group;
+          return {
+            ...task,
+            group: {id, name}
+          };
+        });
+
+        let searched = grouped;
+        if (this.searchString) {
+          searched = grouped.filter(item => (
+            item.name.toLowerCase().includes(this.searchString)
+          ));
+        }
+
+        return [...sum, ...searched];
+      }, []);
+      return tasks;
+    }
+  },
   methods: {
-    openCreateNewModal() {
-      this.createNew.modal = true;
+    openCreateTaskModal() {
+      this.createTaskModal.modal = true;
     },
-    onChangeCreateNewField(name, value) {
-      this.createNew.form[name] = value;
-      this.createNew.form[name + 'Error'] = '';
+    onChangeCreateTaskField(name, value) {
+      this.createTaskModal.form[name] = value;
+      this.createTaskModal.form[name + 'Error'] = '';
     },
-    createNewCard() {
-      const { name } = this.createNew.form;
+    createTask() {
+      const { name, groupId } = this.createTaskModal.form;
       if (!name) {
-        this.createNew.form.nameError = 'Обязательное поле';
+        this.createTaskModal.form.nameError = 'Обязательное поле';
         return;
       }
 
@@ -125,44 +181,67 @@ export default {
         name,
         done: false
       };
-      this.cards.push(created);
-      this.closeCreateNewModal();
+      this.groups = this.groups.map(group => {
+        if (group.id === groupId) {
+          return {...group, tasks: [...group.tasks, created]};
+        }
+        return group;
+      });
+      this.closeCreateTaskModal();
     },
-    closeCreateNewModal() {
-      this.createNew.modal = false;
-      this.createNew.form.name = '';
-      this.createNew.form.nameError = '';
+    closeCreateTaskModal() {
+      this.createTaskModal.modal = false;
+      this.createTaskModal.form.name = '';
+      this.createTaskModal.form.nameError = '';
     },
 
     openEditModal(item) {
-      this.edit.modal = true;
-      this.edit.form = {
-        ...this.edit.form,
-        ...item
+      this.editTaskModal.modal = true;
+      this.editTaskModal.form = {
+        ...this.editTaskModal.form,
+        ...item,
+        groupId: item.group.id
       }
     },
-    onChangeEditField(name, value) {
-      this.edit.form[name] = value;
-      this.edit.form[name + 'Error'] = '';
+    onChangeEditTaskField(name, value) {
+      this.editTaskModal.form[name] = value;
+      this.editTaskModal.form[name + 'Error'] = '';
     },
     editCard() {
-      const { id, name, done } = this.edit.form;
+      const { id, name, done, groupId } = this.editTaskModal.form;
       if (!name) {
-        this.edit.form.nameError = 'Обязательное поле';
+        this.editTaskModal.form.nameError = 'Обязательное поле';
         return;
       }
 
       const edited = { id, name, done };
-      this.cards = this.cards.map(item => item.id === id ? edited : item);
-      this.closeEditModal();
+      // remove old task
+      let preparedGroups = this.groups.map(group => {
+        const tasks = group.tasks.filter(task => task.id !== id);
+        return {...group, tasks};
+      });
+      // add new task
+      preparedGroups = preparedGroups.map(group => {
+        if (group.id === groupId) {
+          return {...group, tasks: [...group.tasks, edited]};
+        }
+        return group;
+      });
+      this.groups = preparedGroups;
+      this.closeEditTaskModal();
     },
-    closeEditModal() {
-      this.edit.modal = false;
+    closeEditTaskModal() {
+      this.editTaskModal.modal = false;
     },
 
-    removeCard(removed) {
-      this.cards = this.cards.filter(item => item.id !== removed.id);
-    }
+    removeTask(removed) {
+      this.groups = this.groups.map(group => {
+        const tasks = group.tasks.filter(task => task.id !== removed.id);
+        return {...group, tasks};
+      });
+    },
+
+    openCreateGroupModal() {}
   }
 }
 </script>
@@ -175,89 +254,28 @@ export default {
   width: 100%;
   min-height: 100vh;
   background-color: #f5f5f5;
-  h1 {
-    padding: 20px 0;
-    background-color: white;
-  }
   &-content {
     padding: 20px;
   }
   &-cards {
     display: flex;
     flex-wrap: wrap;
-    .cards {
-      display: flex;
-      &-item {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        min-width: 300px;
-        max-width: 300px;
-        padding: 20px;
-        margin-right: 20px;
-        margin-bottom: 20px;
-        background-color: white;
-        border-radius: 2px;
-        &_button {
-          align-items: center;
-        }
-        &__name {
-          width: 100%;
-          text-align: left;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        &__status {
-          margin-top: 12px;
-          ._done {
-            color: #228c22;
-          }
-        }
-        &-buttons {
-          margin-top: 12px;
-        }
-        &__edit {
-        }
-        &__delete {
-          margin-left: 12px;
-        }
-      }
-      &__create-new {
-      }
-    }
   }
-  &-modal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    background-color: rgba(0, 0, 0, .6);
-    .modal {
-      &-wrapper {
-        width: 100%;
-        max-width: 500px;
-        padding: 20px;
-        background-color: white;
-        border-radius: 2px;
-      }
-      &__name {
-        margin-top: 12px;
-      }
-      &-buttons {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 12px;
-      }
-      &__cancel {}
-      &__submit {
-        margin-left: 8px;
-      }
+  .create-task-modal, .edit-task-modal {
+    &__name, &__group {
+      margin-top: 12px;
+    }
+    &__status {
+      margin-top: 24px;
+    }
+    &-buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+    &__cancel {}
+    &__submit {
+      margin-left: 8px;
     }
   }
 }

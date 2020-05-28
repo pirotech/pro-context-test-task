@@ -12,7 +12,6 @@
 export default {
   name: "UiCheckbox",
   props: {
-    id: String,
     label: String,
     value: Boolean,
     onChange: Function
@@ -38,7 +37,7 @@ export default {
       align-items: center;
       i {
         display: inline-block;
-        width: 12px;
+        min-width: 12px;
         height: 12px;
         background-color: #888;
       }
