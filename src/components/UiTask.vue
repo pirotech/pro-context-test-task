@@ -1,19 +1,19 @@
 <template>
-  <div class="ui-card">
-    <h5 class="ui-card__name">{{value.name}}</h5>
-    <p class="ui-card__status">
+  <div class="ui-task">
+    <h5 class="ui-task__name">{{value.name}}</h5>
+    <p class="ui-task__status">
       <strong>Статус: </strong>
       <span v-if="value.done" class="_done">Выполнено</span>
       <span v-if="!value.done">Не выполнено</span>
     </p>
-    <p class="ui-card__group"><strong>Группа: </strong>{{value.group.name}}</p>
-    <div class="ui-card-buttons">
+    <p class="ui-task__group"><strong>Группа: </strong>{{value.group.name}}</p>
+    <div class="ui-task-buttons">
       <button
-        class="ui-card__edit"
+        class="ui-task__edit"
         @click="onEdit(value)"
       >Редактировать</button>
       <button
-        class="button_danger ui-card__delete"
+        class="button_danger ui-task__delete"
         @click="onRemove(value)"
       >Удалить</button>
     </div>
@@ -32,7 +32,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.ui-card {
+.ui-task {
   display: flex;
   flex-direction: column;
   justify-content: center;

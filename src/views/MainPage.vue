@@ -3,6 +3,7 @@
     <Header
       :onCreateTask="openCreateTaskModal"
       :onCreateGroup="openCreateGroupModal"
+      :onRemoveGroup="openRemoveGroupModal"
     />
     <div class="main-page-content">
       <div class="main-page-search">
@@ -12,15 +13,36 @@
           :onChange="searchDebounced"
         />
       </div>
-      <ul v-if="tasks" class="main-page-cards">
-        <li v-for="task in tasks" :key="task.id" class="main-page-cards-item">
-          <UiCard
+      <h5 class="main-page__title">Задания</h5>
+      <ul v-if="tasks.length > 0" class="main-page-tasks">
+        <li v-for="task in tasks" :key="task.id" class="main-page-tasks-item">
+          <UiTask
             :value="task"
             :onEdit="openEditModal"
-            :onRemove="openRemoveModal"
+            :onRemove="openRemoveTaskModal"
           />
         </li>
       </ul>
+      <p v-if="flattenTasks.length === 0" class="main-page__placeholder">
+        Задач нет
+      </p>
+      <p v-if="flattenTasks.length > 0 && searchedTasks.length === 0" class="main-page__placeholder">
+        Поиск не дал результатов
+      </p>
+      <h5 class="main-page__title">Группы</h5>
+      <ul v-if="groups.length > 1" class="main-page-groups">
+        <li v-for="group in groups" :key="group.id">
+          <UiGroup
+            class="main-page-groups-item"
+            v-if="group.id !== 0"
+            :value="group"
+            :onRemove="openRemoveGroupModal"
+          />
+        </li>
+      </ul>
+      <p v-if="groups.length === 1" class="main-page__placeholder">
+        Групп нет
+      </p>
     </div>
 
     <Modal :opened="createTaskModal.modal" title="Создать задачу" :closeModal="closeCreateTaskModal">
@@ -105,13 +127,21 @@
         <button class="button_primary create-group-modal__submit" @click="createGroup">Создать</button>
       </div>
     </Modal>
+
+    <Modal :opened="removeGroupModal.modal" title="Удалить группу?" :closeModal="closeRemoveGroupModal">
+      <div class="remove-group-modal-buttons">
+        <button class="remove-group-modal__cancel" @click="closeRemoveGroupModal">Отмена</button>
+        <button class="button_danger remove-group-modal__submit" @click="removeGroup">Удалить</button>
+      </div>
+    </Modal>
   </div>
 </template>
 
 <script>
 import _ from 'lodash';
 import Header from "../components/Header";
-import UiCard from "../components/UiCard";
+import UiTask from "../components/UiTask";
+import UiGroup from "../components/UiGroup";
 import Modal from "../components/Modal";
 import UiCheckbox from "../components/UiCheckbox";
 import UiTextField from "../components/UiTextField";
@@ -121,7 +151,8 @@ export default {
   name: 'MainPage',
   components: {
     Header,
-    UiCard,
+    UiTask,
+    UiGroup,
     Modal,
     UiCheckbox,
     UiTextField,
@@ -182,13 +213,17 @@ export default {
           nameError: '',
           tasks: []
         }
-      }
+      },
+      removeGroupModal: {
+        modal: false,
+        form: {}
+      },
     };
   },
   computed: {
-    tasks() {
-      const tasks = this.groups.reduce((sum, group) => {
-        const grouped = group.tasks.map(task => {
+    flattenTasks() {
+      let tasks = this.groups.reduce((sum, group) => {
+        const flatten = group.tasks.map(task => {
           const { id, name } = group;
           return {
             ...task,
@@ -196,17 +231,25 @@ export default {
           };
         });
 
-        let searched = grouped;
-        if (this.searchString) {
-          searched = grouped.filter(item => (
-            item.name.toLowerCase().includes(this.searchString.toLowerCase())
-          ));
-        }
-
-        return [...sum, ...searched];
+        return [...sum, ...flatten];
       }, []);
+      // + sort by id
+      tasks = tasks.sort((a, b) => a.id - b.id);
       return tasks;
     },
+    searchedTasks() {
+      let searched = this.flattenTasks;
+      if (this.searchString) {
+        searched = searched.filter(item => (
+          item.name.toLowerCase().includes(this.searchString.toLowerCase())
+        ));
+      }
+      return searched;
+    },
+    tasks() {
+      return this.searchedTasks;
+    },
+
     searchDebounced() {
       return _.debounce(this.search, 500);
     }
@@ -288,7 +331,7 @@ export default {
       this.editTaskModal.modal = false;
     },
 
-    openRemoveModal(removed) {
+    openRemoveTaskModal(removed) {
       this.removeTaskModal.modal = true;
       this.removeTaskModal.form = removed;
     },
@@ -345,6 +388,33 @@ export default {
     },
     closeCreateGroupModal() {
       this.createGroupModal.modal = false;
+      this.createGroupModal.form = {
+        name: '',
+        nameError: '',
+        tasks: []
+      };
+    },
+
+    openRemoveGroupModal(removed) {
+      this.removeGroupModal.modal = true;
+      this.removeGroupModal.form = removed;
+    },
+    removeGroup() {
+      const tasks = this.groups.find(item => item.id === this.removeGroupModal.form.id).tasks;
+      console.log(tasks);
+      let groups = this.groups.filter(item => (
+        item.id !== this.removeGroupModal.form.id
+      ));
+      console.log(groups);
+      groups = groups.map(item => (
+        item.id === 0 ? {...item, tasks: [...item.tasks, ...tasks]} : item
+      ));
+      console.log(groups);
+      this.groups = groups;
+      this.closeRemoveGroupModal();
+    },
+    closeRemoveGroupModal() {
+      this.removeGroupModal.modal = false;
     }
   }
 }
@@ -361,6 +431,9 @@ export default {
   &-content {
     padding: 20px;
   }
+  &__title {
+    margin: 20px 0;
+  }
   &-search {
     max-width: 500px;
     margin: 0 auto;
@@ -368,7 +441,7 @@ export default {
       max-width: 300px;
     }
   }
-  &-cards {
+  &-tasks, &-groups {
     display: flex;
     flex-wrap: wrap;
     @media (max-width: 720px) {
@@ -400,7 +473,7 @@ export default {
       margin-left: 8px;
     }
   }
-  .remove-task-modal {
+  .remove-task-modal, .remove-group-modal {
     &-buttons {
       margin-top: 24px;
     }
@@ -412,6 +485,12 @@ export default {
     &__task {
       margin-top: 12px;
     }
+  }
+  &__placeholder {
+    color: #aaa;
+    background-color: white;
+    border-radius: 2px;
+    padding: 50px 0;
   }
 }
 </style>
