@@ -1,5 +1,5 @@
 <template>
-  <label class="ui-checkbox" @click="onChange">
+  <label class="ui-checkbox" @click="onCheckboxChange">
     <i
       class="ui-checkbox__icon"
       :class="{'ui-checkbox__icon_checked': value}"
@@ -15,6 +15,11 @@ export default {
     label: String,
     value: Boolean,
     onChange: Function
+  },
+  methods: {
+    onCheckboxChange() {
+      this.onChange(!this.value);
+    }
   }
 }
 </script>

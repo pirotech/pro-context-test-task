@@ -23,7 +23,7 @@
       </ul>
     </div>
 
-    <Modal :opened="createTaskModal.modal" title="Создать карточку" :closeModal="closeCreateTaskModal">
+    <Modal :opened="createTaskModal.modal" title="Создать задачу" :closeModal="closeCreateTaskModal">
       <UiTextField
         class="create-task-modal__name"
         label="Имя"
@@ -47,7 +47,7 @@
       </div>
     </Modal>
 
-    <Modal :opened="editTaskModal.modal" title="Редактировать карточку" :closeModal="closeEditTaskModal">
+    <Modal :opened="editTaskModal.modal" title="Редактировать задачу" :closeModal="closeEditTaskModal">
       <UiTextField
         class="edit-task-modal__name"
         label="Имя"
@@ -81,6 +81,28 @@
       <div class="remove-task-modal-buttons">
         <button class="remove-task-modal__cancel" @click="closeRemoveTaskModal">Отмена</button>
         <button class="button_danger remove-task-modal__submit" @click="removeTask">Удалить</button>
+      </div>
+    </Modal>
+
+    <Modal :opened="createGroupModal.modal" title="Создать группу" :closeModal="closeCreateGroupModal">
+      <UiTextField
+        class="create-group-modal__name"
+        label="Имя"
+        :value="createGroupModal.form.name"
+        :error="createGroupModal.form.nameError"
+        :onChange="onChangeCreateGroupField('name')"
+      />
+      <UiCheckbox
+        v-for="task in createGroupModal.form.tasks"
+        :key="task.id"
+        class="create-group-modal__task"
+        :label="task.name"
+        :value="task.checked"
+        :onChange="onChangeCreateGroupField('task', task.id)"
+      />
+      <div class="create-group-modal-buttons">
+        <button class="create-group-modal__cancel" @click="closeCreateGroupModal">Отмена</button>
+        <button class="button_primary create-group-modal__submit" @click="createGroup">Создать</button>
       </div>
     </Modal>
   </div>
@@ -152,6 +174,14 @@ export default {
       removeTaskModal: {
         modal: false,
         form: {}
+      },
+      createGroupModal: {
+        modal: false,
+        form: {
+          name: '',
+          nameError: '',
+          tasks: []
+        }
       }
     };
   },
@@ -273,7 +303,49 @@ export default {
       this.removeTaskModal.modal = false;
     },
 
-    openCreateGroupModal() {}
+    openCreateGroupModal() {
+      this.createGroupModal.modal = true;
+      this.createGroupModal.form.tasks = this.tasks.map(item => ({...item, checked: false}));
+    },
+    onChangeCreateGroupField(name, id) {
+      return (value) => {
+        if (name === 'task') {
+          this.createGroupModal.form.tasks = this.createGroupModal.form.tasks.map(item => ({
+            ...item,
+            checked: item.id === id ? value : item.checked
+          }));
+        } else {
+          this.createGroupModal.form[name] = value.target.value;
+          this.createGroupModal.form[name + 'Error'] = '';
+        }
+      };
+    },
+    createGroup() {
+      // form group
+      const { name, tasks } = this.createGroupModal.form;
+      const checkedTasks = tasks.filter(item => item.checked).map(item => {
+        const { id, name, done } = item;
+        return { id, name, done };
+      });
+      const group = {
+        id: Math.round(Math.random() * 1000),
+        name,
+        tasks: checkedTasks
+      };
+      // remove checked tasks
+      this.groups = this.groups.map(group => {
+        const tasks = group.tasks.filter(task => (
+          !checkedTasks.some(item => item.id === task.id)
+        ));
+        return {...group, tasks};
+      });
+      // add new group
+      this.groups.push(group);
+      this.closeCreateGroupModal();
+    },
+    closeCreateGroupModal() {
+      this.createGroupModal.modal = false;
+    }
   }
 }
 </script>
@@ -297,7 +369,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
   }
-  .create-task-modal, .edit-task-modal {
+  .create-task-modal, .edit-task-modal, .create-group-modal {
     &__name, &__group {
       margin-top: 12px;
     }
@@ -320,6 +392,11 @@ export default {
     }
     &__submit {
       margin-left: 8px;
+    }
+  }
+  .create-group-modal {
+    &__task {
+      margin-top: 12px;
     }
   }
 }
