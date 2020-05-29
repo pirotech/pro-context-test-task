@@ -29,6 +29,7 @@ export default {
 .ui-text-field {
   display: flex;
   flex-direction: column;
+  width: 100%;
   &__label {
     display: block;
     font-size: 14px;

@@ -21,7 +21,7 @@ export default {
   props: {
     label: String,
     name: String,
-    value: Number,
+    value: [Number, String],
     checked: Boolean,
     onChange: Function
   },

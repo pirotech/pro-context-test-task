@@ -6,12 +6,36 @@
       :onRemoveGroup="openRemoveGroupModal"
     />
     <div class="main-page-content">
-      <div class="main-page-search">
+      <div class="main-page-filters">
         <UiTextField
           :value="searchString"
           placeholder="Поиск по задачам"
           :onChange="searchDebounced"
         />
+        <div class="main-page-done">
+          <UiRadioButton
+            class="main-page-done__item"
+            name="done"
+            label="Все варианты"
+            value="all"
+            checked
+            :onChange="onChangeDone"
+          />
+          <UiRadioButton
+            class="main-page-done__item"
+            name="done"
+            label="Выполнено"
+            value="done"
+            :onChange="onChangeDone"
+          />
+          <UiRadioButton
+            class="main-page-done__item"
+            name="done"
+            label="Не выполнено"
+            value="undone"
+            :onChange="onChangeDone"
+          />
+        </div>
       </div>
       <h5 class="main-page__title">Задания</h5>
       <ul v-if="tasks.length > 0" class="main-page-tasks">
@@ -185,6 +209,7 @@ export default {
         }
       ],
       searchString: '',
+      done: 'all',
       createTaskModal: {
         modal: false,
         form: {
@@ -244,6 +269,16 @@ export default {
           item.name.toLowerCase().includes(this.searchString.toLowerCase())
         ));
       }
+      switch (this.done) {
+        case 'done': {
+          searched = searched.filter(item => item.done);
+          break;
+        }
+        case 'undone': {
+          searched = searched.filter(item => !item.done);
+          break;
+        }
+      }
       return searched;
     },
     tasks() {
@@ -257,6 +292,9 @@ export default {
   methods: {
     search(e) {
       this.searchString = e.target.value;
+    },
+    onChangeDone(name, value) {
+      this.done = value;
     },
 
     openCreateTaskModal() {
@@ -432,13 +470,30 @@ export default {
     padding: 20px;
   }
   &__title {
-    margin: 20px 0;
+    margin: 40px 0 20px;
   }
-  &-search {
+  &-filters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     max-width: 500px;
     margin: 0 auto;
     @media (max-width: 720px) {
       max-width: 300px;
+    }
+  }
+  &-done {
+    display: flex;
+    @media (max-width: 720px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    &__item {
+      margin-left: 12px;
+      @media (max-width: 720px) {
+        margin-left: 0;
+        margin-bottom: 8px;
+      }
     }
   }
   &-tasks, &-groups {
