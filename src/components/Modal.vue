@@ -33,6 +33,7 @@ export default {
     width: 100%;
     max-width: 500px;
     padding: 20px;
+    margin: 0 10px;
     background-color: white;
     border-radius: 2px;
   }

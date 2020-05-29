@@ -38,9 +38,6 @@ export default {
   &__input {
     width: 100%;
     margin-top: 4px;
-    @media (max-width: 576px) {
-      width: 220px;
-    }
   }
   &__error {
     display: block;

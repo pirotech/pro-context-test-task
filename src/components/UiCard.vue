@@ -40,10 +40,12 @@ export default {
   min-width: 300px;
   max-width: 300px;
   padding: 20px;
-  margin-right: 20px;
-  margin-bottom: 20px;
   background-color: white;
   border-radius: 2px;
+  @media (max-width: 576px) {
+    min-width: 280px;
+    max-width: 280px;
+  }
   &_button {
     align-items: center;
   }

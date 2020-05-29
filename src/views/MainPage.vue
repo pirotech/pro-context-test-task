@@ -13,7 +13,7 @@
         />
       </div>
       <ul v-if="tasks" class="main-page-cards">
-        <li v-for="task in tasks" :key="task.id">
+        <li v-for="task in tasks" :key="task.id" class="main-page-cards-item">
           <UiCard
             :value="task"
             :onEdit="openEditModal"
@@ -364,10 +364,24 @@ export default {
   &-search {
     max-width: 500px;
     margin: 0 auto;
+    @media (max-width: 720px) {
+      max-width: 300px;
+    }
   }
   &-cards {
     display: flex;
     flex-wrap: wrap;
+    @media (max-width: 720px) {
+      flex-direction: column;
+      align-items: center;
+    }
+    &-item {
+      margin-right: 20px;
+      margin-bottom: 20px;
+      @media (max-width: 720px) {
+        margin-right: 0;
+      }
+    }
   }
   .create-task-modal, .edit-task-modal, .create-group-modal {
     &__name, &__group {
