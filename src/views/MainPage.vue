@@ -199,7 +199,7 @@ export default {
         let searched = grouped;
         if (this.searchString) {
           searched = grouped.filter(item => (
-            item.name.toLowerCase().includes(this.searchString)
+            item.name.toLowerCase().includes(this.searchString.toLowerCase())
           ));
         }
 
